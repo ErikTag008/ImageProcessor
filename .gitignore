@@ -45,6 +45,9 @@ compile_commands.json
 *.pch
 *.ipch
 
+# Local input and output images
+/Images/
+
 # Downloaded dependencies
 vcpkg_installed/
 
