@@ -1,0 +1,78 @@
+# Visual Studio and local editor settings
+.vs/
+.vscode/
+.idea/
+*.sln
+*.slnx
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+CMakeSettings.json
+CMakePresets.json
+CMakeUserPresets.json
+
+# Build outputs and generated CMake files
+/out/
+/build/
+/build-*/
+bin/
+obj/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+build.ninja
+.ninja_deps
+.ninja_log
+compile_commands.json
+
+# Compiled binaries and debugging files
+*.exe
+*.dll
+*.so
+*.so.*
+*.dylib
+*.lib
+*.a
+*.obj
+*.o
+*.pdb
+*.ilk
+*.pch
+*.ipch
+
+# Downloaded dependencies
+vcpkg_installed/
+
+# Local secrets and machine-specific configuration
+.env
+.env.*
+!.env.example
+.aws/
+
+# AI assistant configuration and artifacts
+.codex/
+.agents/
+.claude/
+.cursor/
+.aider*
+.copilot/
+AGENTS.md
+CLAUDE.md
+.cursorrules
+.cursorignore
+.github/copilot-instructions.md
+.github/instructions/
+.github/prompts/
+
+# OS files and temporary editor files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~

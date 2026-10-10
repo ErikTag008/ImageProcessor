@@ -1,0 +1,8 @@
+{
+  "name": "image-processor",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "opencv"
+  ],
+  "builtin-baseline": "4056a718039dc20216cccb960bccce4b9ad69519"
+}
