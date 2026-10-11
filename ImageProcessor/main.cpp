@@ -1,11 +1,10 @@
-#include <iostream>
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/utils/logger.hpp>
 #include "ImageProcessor.h"
 #include <algorithm>
 #include <cctype>
+#include <iostream>
+#include <limits>
 #include <string>
-#include <opencv2/core/mat.hpp>
+#include <opencv2/core/utils/logger.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 
@@ -17,18 +16,29 @@ unsigned char GetManipulationInput()
 	do
 	{
 		std::cout << "X - remove blue; Y - remove green; Z - remove red; G - grayscale; B - blur" << std::endl;
-		std::cin >> manipulationInput;
+		if (!(std::cin >> manipulationInput))
+		{
+			std::cerr << "Failed to read the manipulation choice" << std::endl;
+			return '\0';
+		}
 		manipulationInput = static_cast<unsigned char>(std::tolower((manipulationInput)));
 	} while (std::find(admissableChars.begin(), admissableChars.end(), manipulationInput) == admissableChars.end());
 
 	return manipulationInput;
 }
 
-void SaveImage(cv::Mat image, std::string path)
+void SaveImage(const cv::Mat& image, const std::string& path)
 {
-	if (!cv::imwrite(path, image))
+	try
 	{
-		std::cerr << "Failed to Save the Processed Image" << std::endl;
+		if (!cv::imwrite(path, image))
+		{
+			std::cerr << "Failed to save the processed image" << std::endl;
+		}
+	}
+	catch (const cv::Exception& error)
+	{
+		std::cerr << "Failed to save the processed image: " << error.what() << std::endl;
 	}
 }
 
@@ -37,7 +47,11 @@ int main()
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_WARNING);
 	std::string path{};
 	std::cout << "Please Input the Image Path: ";
-	std::getline(std::cin, path);
+	if (!std::getline(std::cin, path))
+	{
+		std::cerr << "Failed to read the image path" << std::endl;
+		return 1;
+	}
 
 	cv::Mat image = cv::imread(path);
 	if (image.empty())
@@ -50,10 +64,11 @@ int main()
 	
 
 	auto manipulationInput = GetManipulationInput();
-
+	if (!std::cin) return 1;
 	ImageProcessor processor;
 	cv::Mat processedImage{ };
 
+	unsigned radius{};
 	switch (manipulationInput)
 	{
 	case 'x':
@@ -69,7 +84,13 @@ int main()
 		processedImage = processor.GrayscaleImage(image);
 		break;
 	case 'b':
-		processedImage = processor.BlurImage(image, 5);
+		std::cout << "Please Input the Radius of the Blur(recommended 1 - 20): ";
+		if (!(std::cin >> radius))
+		{
+			std::cerr << "Failed to read the blur radius" << std::endl;
+			return 1;
+		}
+		processedImage = processor.BlurImage(image, radius);
 		break;
 	default:
 		std::cerr<<"Processor was unable to find the correct manipulation!";
@@ -93,13 +114,21 @@ int main()
 	std::cout << "Do you want to save the processed Image?" << std::endl;
 	std::cout << "Y/N: ";
 	unsigned char allowSave{};
-	std::cin >> allowSave;
-	if (std::tolower(allowSave) != 'n')
+	if (!(std::cin >> allowSave))
+	{
+		std::cerr << "Failed to read the save choice" << std::endl;
+		return 1;
+	}
+	if (std::tolower(allowSave) == 'y')
 	{
 		std::cout << "\nPlease input the path with the name to save to: ";
 		std::string path;
 		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-		std::getline(std::cin, path);
+		if (!std::getline(std::cin, path))
+		{
+			std::cerr << "Failed to read the output path" << std::endl;
+			return 1;
+		}
 		std::cout << "Saving to: [" << path << "]\n";
 		SaveImage(processedImage, path);
 	}

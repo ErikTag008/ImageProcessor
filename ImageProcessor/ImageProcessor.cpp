@@ -1,6 +1,8 @@
 ﻿#include "ImageProcessor.h"
-#include <opencv2/core/matx.hpp>
+#include <cstdint>
+#include <iostream>
 #include <opencv2/core/utility.hpp>
+
 
 cv::Mat ImageProcessor::RemoveColorInImage(const cv::Mat& image, int colorIndex)
 {
@@ -37,9 +39,46 @@ cv::Mat ImageProcessor::GrayscaleImage(const cv::Mat& image)
 		});
 	return processedImage;
 }
-cv::Mat ImageProcessor::BlurImage(const cv::Mat& image, double strength)
+cv::Mat ImageProcessor::BlurImage(const cv::Mat& image, const unsigned radius)
 {
-	cv::Mat processedImage = image.clone();
+	
+	if (radius < 1) return image.clone();
+	cv::Mat processedImage(image.size(), image.type());
+	std::cout << "Please Wait While Blur is getting Applied..." << std::endl;
+	const std::int64_t neighborhoodRadius = radius;
+	auto maxBoxSize = neighborhoodRadius * 2 + 1;
+	if (maxBoxSize > image.cols || maxBoxSize > image.rows)
+	{
+		std::cout << "Selected Radius is Too big. This might take a while..." << std::endl;
+	}
+	processedImage.forEach<cv::Vec3b>(
+		[&image, neighborhoodRadius](cv::Vec3b& outputPixel, const int* position)
+		{
+			int row = position[0];
+			int col = position[1];
+			int firstRow = static_cast<int>(MAX(row - neighborhoodRadius, 0));
+			int firstCol = static_cast<int>(MAX(col - neighborhoodRadius, 0));
+			int lastRow = static_cast<int>(MIN(row + neighborhoodRadius, image.rows - 1));
+			int lastCol = static_cast<int>(MIN(col + neighborhoodRadius, image.cols - 1));
+
+			cv::Vec3i sum{ 0,0,0 };
+			unsigned count = 0;
+			for (int neighborRow = firstRow; neighborRow <= lastRow; neighborRow++)
+			{
+				for (int neighborCol = firstCol; neighborCol <= lastCol; neighborCol++)
+				{
+					const auto& currentPixel = image.at<cv::Vec3b>(neighborRow, neighborCol);
+					sum[0] += currentPixel[0];
+					sum[1] += currentPixel[1];
+					sum[2] += currentPixel[2];
+					++count;
+				}
+			}
+			outputPixel[0] = sum[0] / count;
+			outputPixel[1] = sum[1] / count;
+			outputPixel[2] = sum[2] / count;
+		}
+	);
 	return processedImage;
 }
 cv::Mat ImageProcessor::RemoveBlueInImage(const cv::Mat& image)
@@ -56,3 +95,4 @@ cv::Mat ImageProcessor::RemoveRedInImage(const cv::Mat& image)
 {
 	return RemoveColorInImage(image, 2);
 }
+
